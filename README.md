@@ -27,7 +27,7 @@ I-nat | I-Natural Phenomenon
 O | Filler Word
 
 
-The model consists of Embedding layer, LSTM layer, Fully-connected layer and LogSoftmax layer.  User can adjust training steps and config LSTM layer to train the model
+The model consists of Embedding layer, LSTM layer, Fully-connected layer and LogSoftmax layer.  User can adjust training steps and config LSTM layer number of units to train the model
 
 ## Set-up Environment 
 
@@ -51,6 +51,8 @@ When load the page at the first time, it shows the model status as untrained.
 
 ![untrained](img/untrained.png)
 
+To config LSTM layer number of units, simply change `NamedEntityRecognition/LSTMNUnits.txt`
+
 Then can ajdust *training steps* and click *Train button* to train the model. 
 
 ![untrained](img/training.png)
@@ -58,6 +60,7 @@ Then can ajdust *training steps* and click *Train button* to train the model.
 After training, charts, traing size, validation size, and vocabulary size will be updated, and button color change to green. 
 
 ![untrained](img/trained.png)
+
 
 
 ## Evaluation
