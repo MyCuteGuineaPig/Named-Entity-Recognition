@@ -1,8 +1,8 @@
 # Named-Entity-Recognition
  
-**Named-entity recognition(NER)** is a subtask of information extraction that seeks to locate and classify named entities mentioned in unstructured text into pre-defined categories such as person names, organizations, locations etc.[Wikipedia](https://en.wikipedia.org/wiki/Named-entity_recognition) 
+**Named-entity recognition(NER)**[Wikipedia](https://en.wikipedia.org/wiki/Named-entity_recognition)  is a subtask of information extraction that seeks to locate and classify named entities mentioned in unstructured text into pre-defined categories such as person names, organizations, locations etc.
 
-The dataset is used the IOB format (short for inside, outside, beginning)[Wikipedia](https://en.wikipedia.org/wiki/Inside%E2%80%93outside%E2%80%93beginning_(tagging)). It is a common tagging format for tagging tokens in a chunking task in computational linguistics, The `B-` prefix before a tag indicates that the tag is the beginning of a chunk, and an `I-` prefix before a tag indicates that the tag is inside a chunk. The `B-` tag is used only when a tag is followed by a tag of the same type without `O` tokens between them. An `O` tag indicates that a token belongs to no chunk. 
+The dataset is used the **IOB format (short for inside, outside, beginning)**[Wikipedia](https://en.wikipedia.org/wiki/Inside%E2%80%93outside%E2%80%93beginning_(tagging)). It is a common tagging format for tagging tokens in a chunking task in computational linguistics, The `B-` prefix before a tag indicates that the tag is the beginning of a chunk, and an `I-` prefix before a tag indicates that the tag is inside a chunk. The `B-` tag is used only when a tag is followed by a tag of the same type without `O` tokens between them. An `O` tag indicates that a token belongs to no chunk. 
 
 Below tags are used in trainning dataset
 
@@ -65,7 +65,7 @@ After training, charts, traing size, validation size, and vocabulary size will b
 
 ## Evaluation
 
-After training the model, can input text and click to predict as follow
+After training the model, can input text and click to evaluate with own sentence as follow
 
 ![untrained](img/evaluation.png)
 

@@ -1,24 +1,6 @@
 {% extends "main/header.html" %}
 <script>
 {% block jquery %} 
-var endpoint = 'api/chart/data/'
-
-
-/*
-$.ajax({
-
-    method: "GET",
-    url:endpoint,
-    success:function(data){
-        console.log(data)
-        console.log(data.customers * 20)
-    },
-    error:function(error_data){
-        console.log(error)
-        console.log(error_data)
-    }
-})*/
-
 
 
 function updateLineChart(steps,trainloss,evalLoss,evalAccuracy){
@@ -264,7 +246,7 @@ predict.addEventListener('click', function() {
 
                                     <div class="input-group">{% csrf_token %}
 
-                                        <div class="input-group-text predict-button text-white" id = "predictButton" style="border-radius: 10px 0px 0px 10px;">Click to Predict</div>
+                                        <div class="input-group-text predict-button text-white" id = "predictButton" style="border-radius: 10px 0px 0px 10px;">Click to Evaluate</div>
                                         <textarea class="form-control" aria-label="With textarea" placeholder="Input text for prediction" id = "sentence" style="border-radius: 0px 10px 10px 0px;padding: 6.7px 20px 0 30px;line-height:30px;"></textarea>
                                     </div>
                                 </div>
