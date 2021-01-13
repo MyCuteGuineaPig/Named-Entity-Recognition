@@ -1,0 +1,350 @@
+{% extends "main/header.html" %}
+<script>
+{% block jquery %} 
+var endpoint = 'api/chart/data/'
+
+
+/*
+$.ajax({
+
+    method: "GET",
+    url:endpoint,
+    success:function(data){
+        console.log(data)
+        console.log(data.customers * 20)
+    },
+    error:function(error_data){
+        console.log(error)
+        console.log(error_data)
+    }
+})*/
+
+
+
+function updateLineChart(steps,trainloss,evalLoss,evalAccuracy){
+
+    var chart = document.getElementById("myChart");
+    var myLineChart = new Chart(chart, {
+        type: 'line',
+        data: {
+            labels: steps,
+            datasets: [{ 
+                data: trainloss,
+                label: "Train Loss",
+                borderColor: "#3e95cd",
+                fill: false
+            }, { 
+                data: evalLoss,
+                label: "Eval Loss",
+                borderColor: "#8e5ea2",
+                fill: false
+            }, { 
+                data: evalAccuracy,
+                label: "Evaluation Accuracy",
+                borderColor: "#3cba9f",
+                fill: false
+            }, 
+            ]
+            },
+            options: {
+                title: {
+                display: true,
+                text: 'Metrics'
+                }
+            }
+    });
+}
+
+function updatePieChart(train_size, val_size, vocab_size){
+// -- Pie Chart Example
+    var ctx = document.getElementById("myPieChart");
+    var myPieChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ["Train Size", "Validation Size"],
+        datasets: [{
+        data: [train_size, val_size],
+        backgroundColor: ['#007bff', '#ffc107'],
+        }],
+    },
+    });
+    $('#train_size').html(train_size.toLocaleString());
+    $('#val_size').html(val_size.toLocaleString());
+    $('#vocab_size').html(vocab_size.toLocaleString());
+}
+
+
+var steps = "{{ steps }}";
+
+
+
+
+if (steps != '') {
+
+    steps = JSON.parse(steps);
+    var trainloss = JSON.parse("{{ trainloss }}");
+    var evalLoss = JSON.parse("{{ evalLoss }}");
+    var evalAccuracy = JSON.parse("{{ evalAccuracy }}");
+
+
+    var train_size = parseInt("{{ train_size }}");
+    var val_size = parseInt("{{ val_size }}");
+    var vocab_size = parseInt("{{ vocab_size }}");
+
+    updatePieChart(train_size, val_size, vocab_size);
+    updateLineChart(steps,trainloss,evalLoss,evalAccuracy);
+    
+    $("#statusText").html( "<div class = 'row'>\
+                    <i class='fa fa-check-circle'></i>\
+                    </div>\
+                    <div class = 'row'>\
+                        <span>Retrain</span>\
+                    </div>");
+    $("#trainButton").removeClass('danger');
+    $("#trainButton").addClass('success');
+
+}else{
+    $("#statusText").html( "<div class = 'row'>\
+                    <i class='fa fa-close'></i>\
+                    </div>\
+                    <div class = 'row'>\
+                            <span>Train</span>\
+                    </div>");
+    $("#trainButton").removeClass('success');
+    $("#trainButton").addClass('danger');
+}
+
+
+var myEl = document.getElementById('trainButton');
+
+myEl.addEventListener('click', function() {
+    var steps = $('#trainSteps').val();
+
+    $('#staticBackdrop').modal('show');
+    $('.progress-bar').css('width', '0%').attr('aria-valuenow', 0);
+
+    $(".progress-bar").animate({
+        width: "100%"
+    }, 500*steps);
+    $.ajax({
+        type:'POST',
+        timeout: 0,
+        url:'train/',
+        data:{
+            steps: $('#trainSteps').val(),
+            csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken').val()
+        },
+        success:function(data){
+            console.log(data);
+            
+            updateLineChart(data.steps,data.trainloss,data.evalLoss,data.evalAccuracy);
+            updatePieChart(data.train_size,data.val_size,data.vocab_size);
+            $('#staticBackdrop').modal('hide');
+            $(".progress-bar").stop();
+            $("#statusText").html( "<div class = 'row'>\
+                    <i class='fa fa-check-circle'></i>\
+                    </div>\
+                    <div class = 'row'>\
+                        <span>Retrain</span>\
+                    </div>");
+            $("#trainButton").removeClass('danger');
+            $("#trainButton").addClass('success');
+                        
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) { 
+            alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+            $('#staticBackdrop').modal('hide');
+            $(".progress-bar").stop();
+            $("#statusText").html( "<div class = 'row'>\
+                    <i class='fa fa-close'></i>\
+                    </div>\
+                    <div class = 'row'>\
+                            <span>Train</span>\
+                    </div>")
+            $("#trainButton").removeClass('success');
+            $("#trainButton").addClass('danger');
+        }   
+
+    });
+}, false);
+
+
+
+var predict = document.getElementById('predictButton');
+
+predict.addEventListener('click', function() {
+    $.ajax({
+        type:'POST',
+        timeout: 0,
+        url:'eval/',
+        data:{
+            sentence: $('#sentence').val(),
+            csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken').val()
+        },
+        success:function(data){
+            var entities = data.entities;
+            var words = data.words;
+            var tableHTML = "";
+            for (len = entities.length, i=0; i<len; ++i) {
+               tableHTML = tableHTML + "<tr> <td>"+ words[i] + "</td><td>"+entities[i]  + "</td></tr>";
+            }
+
+            $("#tableEntries").html(tableHTML);
+            $(".tbl-content").css({"height":"300px"});
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) { 
+            alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+        }   
+        
+    });
+}, false);
+
+
+
+
+
+
+
+{% endblock %}
+</script>
+
+
+{% block content %}
+{% load static %}
+
+<div class="container-fluid"> 
+    <div class="row my-3 mx-2">
+       <div class = "col-12 col-md-6">
+            <div class = "row">
+                <div class="col-12 col-md-6">{% csrf_token %}
+                        <!-- <div class="box danger text-white" style="box-shadow: 0px 0px 4px 3px #b88d8b;">-->
+                        <div class="box warning text-white" style="box-shadow: 0px 0px 4px 3px  #d3b998;">
+                            <i class="fa fa-eye"></i>
+                            <input class = "form-control box-number-input" id = "trainSteps" type="number" value="100" min="0" max="1000" step="10" id = "inputSteps" onkeydown="javascript: return event.keyCode == 69 ? false : true" >
+                            <p class="box-title">Training Steps</p>
+                        </div>
+                </div>
+
+
+
+                <div class="col-12 col-md-6 px-5" >
+                    <div class = "row d-flex justify-content-center align-items-center">
+                        <div class="round-button success"  style="width:57%;" id="trainButton" >
+                            
+                            <div class ="round-button-text" id = "statusText">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class = 'col-12 rounded'>
+                    <div class = "card border-secondary mb-3">
+                        <div class = "card-header dark-card-header text-large text-white">
+                            <i class="fa fa-bar-chart"> </i>
+                            Chart
+                        </div>
+                        <div class = "card-body dark-card-body">
+                            <div class ="col-sm-12">
+                                <canvas id="myChart" width="400" height="400"></canvas>     
+                            </div>
+                        </div>
+                    </div>
+                
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <div class = "row">
+                <div class="col-11">
+                        <div class="predict-box mb-3 dark-card-body">
+                
+                            
+                                <div class="row my-3">
+
+                                    <div class="input-group">{% csrf_token %}
+
+                                        <div class="input-group-text predict-button text-white" id = "predictButton" style="border-radius: 10px 0px 0px 10px;">Click to Predict</div>
+                                        <textarea class="form-control" aria-label="With textarea" placeholder="Input text for prediction" id = "sentence" style="border-radius: 0px 10px 10px 0px;padding: 6.7px 20px 0 30px;line-height:30px;"></textarea>
+                                    </div>
+                                </div>
+                                <div class ="separate-div "></div>
+                                <div class ="row mt-3" style="font-size: 18px;">
+                                    <div class = "col-3 text-white text-start">
+                                        Outcome:
+                                    </div>
+                                    <div class ="col-9 text-white">
+                                            <div class="tbl-header">
+                                                    <table cellpadding="0" cellspacing="0" border="0">
+                                                      <thead>
+                                                        <tr>
+                                                          <th>Word</th>
+                                                          <th>Entity</th>
+                                                        </tr>
+                                                      </thead>
+                                                    </table>
+                                                </div>
+                                                  <div class="tbl-content">
+                                                    <table cellpadding="0" cellspacing="0" border="0">
+                                                      <tbody id = "tableEntries">
+                                                        
+                                                    </tbody>
+                                                </table>
+                                              </div>
+                                    </div>  
+                                </div> 
+                        </div>
+                </div>
+
+                <div class = 'col-12 rounded'>
+                    <div class="card mb-3 border-secondary">
+                        <div class="card-header dark-card-header text-large text-white">
+                        <i class="fa fa-pie-chart"></i> Pie Chart
+                        </div>
+                        <div class="card-body dark-card-body">
+                            <div class = "row">
+                                <div class="col-sm-8 my-auto">
+                                    <canvas id="myPieChart" width="100%" height="100"></canvas>
+                                </div>
+                            
+                                <div class="col-sm-4 text-center my-auto">
+                                        <div class="h4 mb-0 text-light" id ="train_size"></div>
+                                        <div class="h6  text-info">Train Size</div>
+                                        <div class ="separate-div " style="width: 70%;"></div>
+                                        <div class="h4 mb-0 text-light" id ="val_size"></div>
+                                        <div class="h6  text-info">Validation Size</div>
+                                        <div class ="separate-div " style="width: 70%;"></div>
+                                        <div class="h4 mb-0 text-light" id ="vocab_size"></div>
+                                        <div class="h6 text-info">Vocabulary Size</div>
+                                </div>
+                    
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Training...</h5>
+                
+            </div>
+            <div class="modal-body">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
