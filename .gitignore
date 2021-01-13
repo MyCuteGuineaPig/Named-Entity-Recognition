@@ -127,3 +127,16 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# exlude training parameters and user specific info
+NamedEntityRecognition/__pycache__/
+NamedEntityRecognition/eval
+NamedEntityRecognition/migrations/
+NamedEntityRecognition/train
+NamedEntityRecognition/eval
+NamedEntityRecognition/model.pkl.gz
+NamedEntityRecognition/config.gin
+NamedEntityRecognition/dictionary.json
+NamedEntityRecognition/metrics.txt
+NamedEntityRecognition/trainingconfig.txt
